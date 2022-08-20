@@ -2,9 +2,10 @@
   "name": "reactImitateGithub",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
-    "dev": "next dev",
+    "tscs": "tsc server/server.ts",
+    "dev": "node server/server.js",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -14,9 +15,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "ioredis": "^5.2.2",
     "koa": "^2.13.4",
     "next": "^12.2.5",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "typescript": "^4.7.4"
+  },
+  "devDependencies": {
+    "@types/node": "^18.7.8",
+    "@types/react": "^18.0.17"
   }
 }
