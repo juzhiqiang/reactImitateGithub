@@ -36,60 +36,51 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-var Koa = require("koa");
-var Router = require("koa-router");
-var next = require("next");
-var session = require("koa-session");
-var auth_1 = require("./auth");
-// import { RedisSessionStore } from "./session-store";
-var dev = process.env.NODE_ENV !== "production";
-var app = next({ dev: dev });
-var handle = app.getRequestHandler();
-app.prepare().then(function () {
-    var server = new Koa();
-    var router = new Router();
-    router.get("/a/:id", function (ctx) { return __awaiter(void 0, void 0, void 0, function () {
-        var id;
+exports.auth = void 0;
+var axios_1 = require("axios");
+var config = require("../config");
+var _a = config.github, client_id = _a.client_id, client_secrets = _a.client_secrets, request_token_url = _a.request_token_url;
+var auth = function (server) {
+    server.use(function (ctx, next) { return __awaiter(void 0, void 0, void 0, function () {
+        var code, result;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    id = ctx.params.id;
-                    return [4 /*yield*/, handle(ctx.req, ctx.res, {
-                            pathname: "/a",
-                            query: { id: id }
+                    if (!(ctx.path === "/auth")) return [3 /*break*/, 2];
+                    code = ctx.query.code;
+                    if (!code) {
+                        ctx.body = "code not exist";
+                        return [2 /*return*/];
+                    }
+                    return [4 /*yield*/, (0, axios_1["default"])({
+                            method: "POST",
+                            url: request_token_url,
+                            data: {
+                                client_id: client_id,
+                                client_secret: client_secrets,
+                                code: code
+                            },
+                            headers: {
+                                Accept: "application/json"
+                            }
                         })];
                 case 1:
+                    result = _a.sent();
+                    if (result.status === 200) {
+                        ctx.session.githubAuth = result.data;
+                        ctx.redirect('/');
+                    }
+                    else {
+                        ctx.body = "request token failed ".concat(result.message);
+                    }
+                    return [3 /*break*/, 4];
+                case 2: return [4 /*yield*/, next()];
+                case 3:
                     _a.sent();
-                    ctx.respond = false;
-                    return [2 /*return*/];
+                    _a.label = 4;
+                case 4: return [2 /*return*/];
             }
         });
     }); });
-    server.keys = ['secret'];
-    server.use(session({
-        key: "koa:sess",
-        maxAge: 86400000,
-        overwrite: true,
-        httpOnly: true,
-        signed: true,
-        rolling: false,
-        renew: false
-    }, server));
-    server.use(router.routes());
-    (0, auth_1.auth)(server);
-    server.use(function (ctx, next) { return __awaiter(void 0, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, handle(ctx.req, ctx.res)];
-                case 1:
-                    _a.sent();
-                    ctx.respond = false;
-                    return [2 /*return*/];
-            }
-        });
-    }); });
-    server.listen(3000, function () {
-        console.log("3001 start");
-    });
-});
-exports["default"] = (function () { });
+};
+exports.auth = auth;

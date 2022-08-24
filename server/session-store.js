@@ -36,60 +36,81 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-var Koa = require("koa");
-var Router = require("koa-router");
-var next = require("next");
-var session = require("koa-session");
-var auth_1 = require("./auth");
-// import { RedisSessionStore } from "./session-store";
-var dev = process.env.NODE_ENV !== "production";
-var app = next({ dev: dev });
-var handle = app.getRequestHandler();
-app.prepare().then(function () {
-    var server = new Koa();
-    var router = new Router();
-    router.get("/a/:id", function (ctx) { return __awaiter(void 0, void 0, void 0, function () {
+exports.RedisSessionStore = void 0;
+var getRedisSessionId = function (sid) {
+    return "ssid:".concat(sid);
+};
+function RedisSessionStore(clients) {
+    var _this = this;
+    var client = clients;
+    // 获取redis中数据
+    var get = function (sid) { return __awaiter(_this, void 0, void 0, function () {
+        var id, data, result;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    id = getRedisSessionId(sid);
+                    return [4 /*yield*/, client.get(id)];
+                case 1:
+                    data = _a.sent();
+                    if (!data) {
+                        return [2 /*return*/, null];
+                    }
+                    try {
+                        result = JSON.parse(data);
+                        return [2 /*return*/, result];
+                    }
+                    catch (error) {
+                        console.error(error);
+                    }
+                    return [2 /*return*/];
+            }
+        });
+    }); };
+    var set = function (sid, sess, ttl) { return __awaiter(_this, void 0, void 0, function () {
+        var id, sessionStr, error_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    id = getRedisSessionId(sid);
+                    if (typeof ttl === "number") {
+                        ttl = Math.ceil(ttl / 1000);
+                    }
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 6, , 7]);
+                    sessionStr = JSON.stringify(sess);
+                    if (!ttl) return [3 /*break*/, 3];
+                    return [4 /*yield*/, client.setex(id, ttl, sessionStr)];
+                case 2:
+                    _a.sent();
+                    return [3 /*break*/, 5];
+                case 3: return [4 /*yield*/, client.set(id, sessionStr)];
+                case 4:
+                    _a.sent();
+                    _a.label = 5;
+                case 5: return [3 /*break*/, 7];
+                case 6:
+                    error_1 = _a.sent();
+                    console.log(error_1);
+                    return [3 /*break*/, 7];
+                case 7: return [2 /*return*/];
+            }
+        });
+    }); };
+    var destroy = function (sid) { return __awaiter(_this, void 0, void 0, function () {
         var id;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    id = ctx.params.id;
-                    return [4 /*yield*/, handle(ctx.req, ctx.res, {
-                            pathname: "/a",
-                            query: { id: id }
-                        })];
+                    id = getRedisSessionId(sid);
+                    return [4 /*yield*/, client.del(id)];
                 case 1:
                     _a.sent();
-                    ctx.respond = false;
                     return [2 /*return*/];
             }
         });
-    }); });
-    server.keys = ['secret'];
-    server.use(session({
-        key: "koa:sess",
-        maxAge: 86400000,
-        overwrite: true,
-        httpOnly: true,
-        signed: true,
-        rolling: false,
-        renew: false
-    }, server));
-    server.use(router.routes());
-    (0, auth_1.auth)(server);
-    server.use(function (ctx, next) { return __awaiter(void 0, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, handle(ctx.req, ctx.res)];
-                case 1:
-                    _a.sent();
-                    ctx.respond = false;
-                    return [2 /*return*/];
-            }
-        });
-    }); });
-    server.listen(3000, function () {
-        console.log("3001 start");
-    });
-});
-exports["default"] = (function () { });
+    }); };
+    return { get: get, set: set, destroy: destroy };
+}
+exports.RedisSessionStore = RedisSessionStore;

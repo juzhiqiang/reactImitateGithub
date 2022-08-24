@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "tscs": "tsc server/server.ts",
-    "dev": "node server/server.js",
+    "dev": "tsc server/server.ts & node server/server.js",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -15,14 +15,19 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/styled-components": "^5.1.26",
     "@zeit/next-css": "^1.0.1",
     "antd": "^4.22.6",
+    "axios": "^0.27.2",
+    "babel-plugin-styled-components": "^2.0.7",
     "ioredis": "^5.2.2",
     "koa": "^2.13.4",
     "koa-router": "^12.0.0",
+    "koa-session": "^6.2.0",
     "next": "^12.2.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "styled-components": "^5.3.5",
     "typescript": "^4.7.4"
   },
   "devDependencies": {
